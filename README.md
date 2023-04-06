@@ -61,7 +61,7 @@ If you find this code useful for your research, please use the following BibTeX 
 ```bibtex
 @article{Huang2023adamatcher,
   title={Adaptive Assignment for Geometry Aware Local Feature Matching},
-  author={Dihe Huang, Ying Chen, Jianlin Liu], Yong Liu, Shang Xu, Wenlong Wu, Yikang Ding, Fan Tang, Chengjie Wang},
+  author={Dihe Huang, Ying Chen, Yong Liu, Jianlin Liu, Shang Xu, Wenlong Wu, Yikang Ding, Fan Tang, Chengjie Wang},
   journal={{CVPR}},
   year={2023}
 }
