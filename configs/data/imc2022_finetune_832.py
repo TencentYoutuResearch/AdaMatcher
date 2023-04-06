@@ -20,6 +20,6 @@ cfg.DATASET.MIN_OVERLAP_SCORE_TEST = 0.0  # for both test and val
 
 # 368 scenes in total for MegaDepth
 # (with difficulty balanced (further split each scene to 3 sub-scenes))
-cfg.TRAINER.N_SAMPLES_PER_SUBSET = 100  # 100
+cfg.TRAINER.N_SAMPLES_PER_SUBSET = 100
 
 cfg.DATASET.MGDPT_IMG_RESIZE = 832  # for training on 11GB mem GPUs

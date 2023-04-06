@@ -5,9 +5,9 @@ cfg.ADAMATCHER.MATCH_COARSE.MATCH_TYPE = 'dual_softmax'
 
 cfg.TRAINER.N_SAMPLES_PER_SUBSET = 200
 
-cfg.TRAINER.WARMUP_TYPE = 'linear'  # 'constant' # 'linear'  # [linear, constant]
-cfg.TRAINER.WARMUP_STEP = 4800  # 6400   # 4800
-cfg.TRAINER.CANONICAL_LR = 3e-3  # 6e-3
+cfg.TRAINER.WARMUP_TYPE = 'linear'  # [linear, constant]
+cfg.TRAINER.WARMUP_STEP = 4800 
+cfg.TRAINER.CANONICAL_LR = 3e-3 
 
 cfg.ADAMATCHER.MATCH_COARSE.SPARSE_SPVS = False
 
@@ -21,7 +21,7 @@ cfg.TRAINER.MSLR_MILESTONES = [
     23,
     26,
     29,
-]  # [4,8,12,16,20,23,26,29] # [6, 9, 12, 17, 20, 23, 26, 29] # [3, 6, 9, 12, 17, 20, 23, 26, 29]
+] 
 
 cfg.ADAMATCHER.RESOLUTION = (16, 8, 2)  # (32,8,2)
 cfg.DATASET.MGDPT_DF = cfg.ADAMATCHER.RESOLUTION[0]
