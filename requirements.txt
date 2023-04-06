@@ -1,0 +1,18 @@
+albumentations==0.5.1 --no-binary=imgaug,albumentations
+autopep8
+einops==0.3.0
+fairscale
+fvcore
+h5py==2.10.0
+ipython
+joblib>=1.0.1
+jupyterlab
+kornia==0.4.1
+loguru==0.5.3
+matplotlib
+opencv_python==4.4.0.46
+pytorch-lightning==1.3.5
+ray>=1.0.1
+tqdm
+typing-extensions==3.7.4
+yacs>=0.1.8
