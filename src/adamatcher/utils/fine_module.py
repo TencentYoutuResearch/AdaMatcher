@@ -31,12 +31,12 @@ class FineModule(nn.Module):
     def __init__(self, resolution, d_model=128):
         super().__init__()
         self.d_model = d_model
-        self.scale_l0, self.scale_l1, self.scale_l2 = resolution  # 64 8 2
-        self.scale_l1l2 = self.scale_l1 // self.scale_l2  # 4
+        self.scale_l0, self.scale_l1, self.scale_l2 = resolution
+        self.scale_l1l2 = self.scale_l1 // self.scale_l2
         self.count = 0
 
         self.attention = FeatureAttention(layer_num=1, d_model=128)
-        self.W = 5  # 5
+        self.W = 5
         d_model_c = 256
         d_model_f = 128
         self.down_proj = nn.Linear(d_model_c, d_model_f, bias=True)

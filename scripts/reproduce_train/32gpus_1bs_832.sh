@@ -8,7 +8,7 @@ export PYTHONPATH=$PROJECT_DIR:$PYTHONPATH
 cd $PROJECT_DIR
 
 TRAIN_IMG_SIZE=832
-data_cfg_path="configs/data/megadepth_all_trainval_${TRAIN_IMG_SIZE}.py"
+data_cfg_path="configs/data/megadepth_trainval_${TRAIN_IMG_SIZE}.py"
 main_cfg_path="configs/loftr/outdoor/loftr_ds_dense.py"
 
 n_nodes=4
@@ -16,7 +16,7 @@ n_gpus_per_node=8 # 1 4 8
 torch_num_workers=8 # 1 4 8
 batch_size=1
 pin_memory=true
-exp_name="resnet_scc_c_scc_2500-${TRAIN_IMG_SIZE}-bs$(($n_gpus_per_node * $n_nodes * $batch_size))"
+exp_name="AdaMatcher-${TRAIN_IMG_SIZE}-bs$(($n_gpus_per_node * $n_nodes * $batch_size))"
 
 python3 -u ./train.py \
     ${data_cfg_path} \
@@ -30,4 +30,4 @@ python3 -u ./train.py \
     --limit_val_batches=1. \
     --num_sanity_val_steps=10 \
     --benchmark=True \
-    --max_epochs=30 >> ./OUTPUT/resnet_scc_c_scc_2500.txt
+    --max_epochs=30 >> ./OUTPUT/AdaMatcher.txt

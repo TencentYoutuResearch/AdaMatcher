@@ -28,8 +28,8 @@ class AdaMatcher(nn.Module):
         self.pos_encoding = PositionEncodingSine(
             config["coarse"]["d_model"], max_shape=(512, 512)
         )
-        self.backbone = build_backbone(config)  # ResNetFPN_64_8_2
-        self.feature_interaction = FICAS()  # FeatureAttention()
+        self.backbone = build_backbone(config)
+        self.feature_interaction = FICAS()
 
         self.coarse_module = CoarseModule(config["match_coarse"], config["resolution"])
         self.fine_module = FineModule(config["resolution"])
@@ -102,13 +102,8 @@ class AdaMatcher(nn.Module):
             {"cas_score0": cas_score0, "cas_score1": cas_score1}  # [N, h0_l1, w0_l1]
         )  # [N, h1_l1, w1_l1]
 
-        # torch.cuda.synchronize()
-        # self.ficas_time += time.time() - t1
-
         # coarse match
         self.coarse_module(data, mask_feat0, mask_feat1)
 
         # sub-pixel refinement
-        # feat_d2_0 = self.pos_encoding_fine(feat_d2_0)
-        # feat_d2_1 = self.pos_encoding_fine(feat_d2_1)
         self.fine_module(data, feat_d2_0, feat_d2_1, feat_c_0, feat_c_1)

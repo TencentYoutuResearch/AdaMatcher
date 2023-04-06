@@ -10,7 +10,6 @@ from .linear_attention import (
     FullAttention,
     LinearAttention,
     MultiHeadAttention,
-    SimAttention,
 )
 
 
@@ -28,8 +27,6 @@ class EncoderLayer(nn.Module):
         self.attention = (
             LinearAttention()
             if attention == "linear"
-            else SimAttention()
-            if attention == "sim"
             else FullAttention()
         )
         self.merge = nn.Linear(d_model, d_model, bias=False)
@@ -89,7 +86,7 @@ class LocalFeatureTransformer(nn.Module):
         self.d_model = config["d_model"]
         self.nhead = config["nhead"]
         self.layer_names = config["layer_names"]
-        encoder_layer = LoFTREncoderLayer(
+        encoder_layer = EncoderLayer(
             config["d_model"], config["nhead"], config["attention"]
         )
         self.layers = nn.ModuleList(

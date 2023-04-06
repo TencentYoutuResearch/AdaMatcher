@@ -24,21 +24,21 @@ class CoarseModule(nn.Module):
         self.scale_l0, self.scale_l1, self.scale_l2 = resolution
         self.patch_size = self.scale_l0 // self.scale_l1
 
-        self.conf_threshold = conf["conf_threshold"]  # 0.5
+        self.conf_threshold = conf["conf_threshold"]
         self.inference_conf_threshold = conf[
             "inference_conf_threshold"
-        ]  # 0.5  # 0.55 # 0.6(megadepth)
-        self.class_threshold = conf["class_threshold"]  # 0.2  # 0.3
-        self.class_num_threshold = conf["class_num_threshold"]  # 0.2
+        ]
+        self.class_threshold = conf["class_threshold"]
+        self.class_num_threshold = conf["class_num_threshold"]
 
         self.train_coarse_percent = 0.3
         self.train_pad_num_gt_min = 200
         self.max_train_pts = conf[
             "max_train_pts"
         ]  # 2500  # 2200(megadepth0306)  # 2500(best)  # 1500
-        self.max_o_scale = conf["max_o_scale"]  # 5.   # 832:2.5 # 3. # 4.
+        self.max_o_scale = conf["max_o_scale"]
         self.t_k = conf["t_k"]  # -1
-        self.patch_limit_n = conf["patch_limit_n"]  # 5 # 15
+        self.patch_limit_n = conf["patch_limit_n"]
         self.use_dual_filter = conf["use_dual_filter"]  # False
 
     def generate_matching_matrix(
@@ -64,7 +64,7 @@ class CoarseModule(nn.Module):
         # sim_matrix.masked_fill_(
         #             ~(q_mask[..., None] * m_mask[:, None]).bool(),
         #             -INF)
-        instance_masks = sim_matrix.softmax(dim=1)  # * sim_matrix.softmax(dim=2)
+        instance_masks = sim_matrix.softmax(dim=1)
         query_masks = sim_matrix.softmax(dim=2).transpose(1, 2)
 
         with torch.no_grad():
@@ -149,30 +149,13 @@ class CoarseModule(nn.Module):
             mid_matrix1_l0l1: [k1, 4, h1_l1*w1_l1]
             class_k0_l0_ids: [k1, ]
         """
-        patch_size_l0l1 = self.scale_l0 // self.scale_l1  # 8
-        if self.training:  # 1:
+        patch_size_l0l1 = self.scale_l0 // self.scale_l1
+        if self.training:
             k_ids1_l1, j_ids1_l1 = torch.nonzero(
                 instance_mask1 > self.conf_threshold, as_tuple=True
             )
-            i_ids1_l0 = class_k0_l0_ids[k_ids1_l1]  # [k1', ]
-        elif self.training and 0:
-            limit_n = 40  # 15(best)  # 5  # 15
-            sub_patch = mid_matrix1_l0l1.shape[1]
-            values, inds_j = mid_matrix1_l0l1.topk(limit_n, dim=-1)
-            inds_k = (
-                torch.arange(class_k0_l0_ids.size(0))[:, None, None]
-                .repeat(1, sub_patch, limit_n)
-                .to(inds_j)
-            )
-            j_ids1_l1 = inds_j[
-                values > 0.25
-            ]  # [values > self.inference_conf_threshold]
-            k_ids1_l1 = inds_k[
-                values > 0.25
-            ]  # [values > self.inference_conf_threshold]
             i_ids1_l0 = class_k0_l0_ids[k_ids1_l1]
         else:
-            # limit_n = 15  # 15  # 20  # 15(best)  # 5  # 15
             sub_patch = mid_matrix1_l0l1.shape[1]
             values, inds_j = mid_matrix1_l0l1.topk(self.patch_limit_n, dim=-1)
             inds_k = (
@@ -187,7 +170,7 @@ class CoarseModule(nn.Module):
         if len(j_ids1_l1) != 0:
             scores, i_ids1_l0l1 = mid_matrix1_l0l1[k_ids1_l1, :, j_ids1_l1].max(
                 dim=-1
-            )  # [k,64]->[k,1] index
+            )
             if not self.training:
                 scores_mask = scores > self.inference_conf_threshold
                 i_ids1_l0 = i_ids1_l0[scores_mask]
@@ -215,7 +198,7 @@ class CoarseModule(nn.Module):
 
             num_matches_train = min(
                 int(num_candidates_max * self.train_coarse_percent), self.max_train_pts
-            )  # 2500  # 1440 1500 1000  # int(num_candidates_max * self.train_coarse_percent)
+            )  # int(num_candidates_max * self.train_coarse_percent)
             # num_matches_train = int(num_candidates_max * self.train_coarse_percent) # origin
             num_matches_pred = len(j_ids1_l1)
             assert (
@@ -418,9 +401,6 @@ class CoarseModule(nn.Module):
         data.update(**index_dict)
 
         ######## 2. Generate Matching Matrix ##########################################
-        # conf_matrix1:   [bs, l, s]         conf_matrix0:   [bs, s, l]
-        # conf_matrix1_d: [bs, l//64, s]     conf_matrix0_d: [bs, s//64, l]
-        # tmp_matrix1_d: [bs, l//64, 64, s]  tmp_matrix0_d: [bs, s//64, 64, l]
         (
             conf_matrix1,
             conf_matrix0,

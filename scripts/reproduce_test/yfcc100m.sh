@@ -7,7 +7,7 @@ PROJECT_DIR="${SCRIPTPATH}/../../"
 export PYTHONPATH=$PROJECT_DIR:$PYTHONPATH
 cd $PROJECT_DIR
 
-# data_cfg_path="configs/data/megadepth_test_1500.py"
+# data_cfg_path="configs/data/megadepth_test_4000.py"
 data_cfg_path="configs/data/yfcc100m.py"
 main_cfg_path="configs/loftr/outdoor/loftr_ds_dense_yfcc.py"
 

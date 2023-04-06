@@ -103,57 +103,6 @@ class MultiHeadAttention(Module):
         return message
 
 
-class SimAttention(Module):
-    def __init__(self, eps=1e-6):
-        super().__init__()
-        self.feature_map = elu_feature_map
-        self.eps = eps
-
-        self.linear = torch.nn.Linear(2, 1)
-        self.sigmoid = torch.nn.Sigmoid()
-
-    def forward(self, queries, keys, values, q_mask=None, kv_mask=None):
-        """Multi-Head linear attention proposed in "Transformers are RNNs"
-        Args:
-            queries: [N, L, H, D]
-            keys: [N, S, H, D]
-            values: [N, S, H, D]
-            q_mask: [N, L]
-            kv_mask: [N, S]
-        Returns:
-            queried_values: (N, L, H, D)
-        """
-        # pdb.set_trace()
-        Q = self.feature_map(queries)
-        K = self.feature_map(keys)
-        # Q = queries
-        # K = keys
-
-        # set padded position to zero
-        if q_mask is not None:
-            Q = Q * q_mask[:, :, None, None]
-            queries = queries * q_mask[:, :, None, None]
-        if kv_mask is not None:
-            K = K * kv_mask[:, :, None, None]
-            values = values * kv_mask[:, :, None, None]
-
-        # v_length = values.size(1)
-        # values = values / v_length  # prevent fp16 overflow
-        # KV = torch.einsum("nshd,nshv->nhdv", K, values)  # (S,D)' @ S,V
-        # Z = 1 / (torch.einsum("nlhd,nhd->nlh", Q, K.sum(dim=1)) + self.eps)
-        # queried_values = torch.einsum("nlhd,nhdv,nlh->nlhv", Q, KV, Z) * v_length
-
-        qk = torch.einsum('nlhd,nshd->nlsh', Q, K)  # [n,l,s,h]
-        qk_mean = torch.mean(qk, dim=2, keepdim=True)  # [n,l,1,h]
-        qk_max, _ = torch.max(qk, dim=2, keepdim=True)  # [n,l,1,h]
-        atten = torch.cat([qk_mean, qk_max], dim=2).permute(0, 1, 3,
-                                                            2)  # [n,l,h,2]
-        atten = self.sigmoid(self.linear(atten).squeeze(-1))  # [n,l,h]
-        queried_values = torch.einsum('nlhd,nlh->nlhd', queries, atten)
-        # queried_values = torch.einsum('nlhd,nlh->nlhd', Q, atten)
-        return queried_values.contiguous()
-
-
 class FullAttention(Module):
     def __init__(self, use_dropout=False, attention_dropout=0.1):
         super().__init__()

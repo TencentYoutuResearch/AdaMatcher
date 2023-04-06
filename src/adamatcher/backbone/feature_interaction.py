@@ -21,7 +21,7 @@ def make_head_layer(cnv_dim, curr_dim, out_dim, head_name=None):
         # nn.BatchNorm2d(curr_dim, eps=1e-3, momentum=0.01),
         nn.ReLU(inplace=True),
         nn.Conv2d(curr_dim, out_dim, kernel_size=3, stride=1, padding=1),
-    )  # kernel=1, padding=0, bias=True
+    )
 
     for l in fc.modules():
         if isinstance(l, nn.Conv2d):
@@ -72,7 +72,6 @@ class FeatureAttention(nn.Module):
         if x0_mask != None and x1_mask != None:
             x0_mask, x1_mask = x0_mask.flatten(-2), x1_mask.flatten(-2)
 
-        save_feat = []
         if flag is False:
             for i, (layer, name) in enumerate(zip(self.layers, self.layer_names)):
                 if name == "self":
@@ -85,9 +84,6 @@ class FeatureAttention(nn.Module):
                     raise KeyError
                 x0 = layer(x0, src0, x0_mask, src0_mask)
                 x1 = layer(x1, src1, x1_mask, src1_mask)
-                if i == 1:  # i==len(self.layer_names)//2-1:
-                    # print(i, len(self.layer_names))
-                    save_feat.append((x0, x1))
         elif flag == 1:  # origin
             for layer, name in zip(self.layers, self.layer_names):
                 if name == "self":
@@ -109,11 +105,7 @@ class FeatureAttention(nn.Module):
                 else:
                     raise KeyError
 
-        # return feat0, feat1
-        if len(save_feat) > 0:
-            return x0, x1, save_feat
-        else:
-            return x0, x1
+        return x0, x1
 
 
 class SegmentationModule(nn.Module):
@@ -129,22 +121,15 @@ class SegmentationModule(nn.Module):
     def forward(self, x, hs, mask=None):
         # x:[n, 256, h, w]  hs:[n, num_q, 256]
 
-        # TODO: BN
         if mask is not None:
-            # hs = self.encoderlayer(hs, x3_flatten, None, mask_flatten)
             attn_mask = torch.einsum("mqc,mchw->mqhw", hs, x)
-            # attn_mask = self.bn(attn_mask)
-            # attn_mask = attn_mask * self.gamma
             attn_mask = attn_mask.sigmoid() * mask.unsqueeze(1)
             classification = self.block(x * attn_mask + x).sigmoid().squeeze(1) * mask
         else:
-            # hs = self.encoderlayer(hs, x3_flatten)
             attn_mask = torch.einsum("mqc,mchw->mqhw", hs, x)
-            # attn_mask = self.bn(attn_mask)
-            # attn_mask = attn_mask * self.gamma
             attn_mask = attn_mask.sigmoid()
             classification = self.block(x * attn_mask + x).sigmoid().squeeze(1)
-        return classification  # , attn_mask # , mask_feat
+        return classification
 
 
 class FICAS(nn.Module):
@@ -166,7 +151,7 @@ class FICAS(nn.Module):
         self.layer_names1 = [
             "self",
             "cross",
-        ]  # ['self', 'cross', 'cross']  # ['self', 'cross']  origin for eccv
+        ]
         self.layers1 = nn.ModuleList(
             [copy.deepcopy(encoder_layer) for _ in range(len(self.layer_names1))]
         )
@@ -186,7 +171,7 @@ class FICAS(nn.Module):
         self.layer_names3 = [
             "self",
             "cross",
-        ]  # ['self', 'cross', 'cross']  # ['self', 'cross']  origin for eccv
+        ]
         self.layers3 = nn.ModuleList(
             [copy.deepcopy(encoder_layer) for _ in range(len(self.layer_names3))]
         )
@@ -216,8 +201,7 @@ class FICAS(nn.Module):
             and src1_mask is not None
             and not self.training
             and 0
-        ):  #  \
-            # and layer_name == 'self' and 0:
+        ):
             temp_x = layer(
                 torch.cat([x0, x1], dim=0),
                 torch.cat([src0, src1], dim=0),
@@ -252,8 +236,7 @@ class FICAS(nn.Module):
         feature_embed1 = self.feature_embed.weight.unsqueeze(0).repeat(bs, 1, 1)
         tgt0 = torch.zeros_like(feature_embed0)
         tgt1 = torch.zeros_like(feature_embed1)
-        # hs0 = self.decoder(tgt0, x0, tgt_mask=None, memory_mask=x0_mask)
-        # hs1 = self.decoder(tgt1, x1, tgt_mask=None, memory_mask=x1_mask)
+
         if (
             0
         ):  # x0.shape==x1.shape and x0_mask is not None and x0_mask.shape==x1_mask.shape:
@@ -331,10 +314,7 @@ class FICAS(nn.Module):
         out0, out1, hs0, hs1, x0_mid, x1_mid = self.feature_interaction(
             x0, x1, x0_mask, x1_mask
         )
-        # out0 = rearrange(out0, 'n (h w) c -> n c h w',
-        #                  h=h0, w=w0).contiguous()
-        # out1 = rearrange(out1, 'n (h w) c -> n c h w',
-        #                  h=h1, w=w1).contiguous()
+
         if use_cas:
             x0_mid = rearrange(x0_mid, "n (h w) c -> n c h w", h=h0, w=w0).contiguous()
             x1_mid = rearrange(x1_mid, "n (h w) c -> n c h w", h=h1, w=w1).contiguous()
