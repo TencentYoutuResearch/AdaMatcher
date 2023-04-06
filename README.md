@@ -9,7 +9,6 @@
 
 ![network](assets/network.pdf)
 
-> Since our code open source requires review and related patent support, we need to complete the application for the relevant process, and it is expected that the open source will be completed around April 1.
 
 
 ## Installation
